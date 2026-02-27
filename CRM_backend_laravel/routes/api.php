@@ -1,7 +1,7 @@
 <?php
-
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ClientController;
 
 Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
@@ -10,3 +10,6 @@ Route::prefix('auth')->group(function () {
     Route::get('me', [AuthController::class, 'me'])->middleware('auth:api');
 });
 
+Route::middleware('auth:api')->group(function () {
+    Route::apiResource('clients', ClientController::class);
+});

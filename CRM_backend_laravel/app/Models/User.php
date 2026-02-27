@@ -10,6 +10,7 @@ class User extends Authenticatable implements JWTSubject
 {
     use Notifiable;
 
+    
     protected $table = 'users';
     protected $primaryKey = 'id';
     public $timestamps = false;
