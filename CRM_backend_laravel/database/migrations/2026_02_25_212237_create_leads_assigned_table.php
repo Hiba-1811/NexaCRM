@@ -17,6 +17,10 @@ return new class extends Migration
             $table->integer('leadsassigned_userid')->nullable();
             $table->timestamp('leadsassigned_created');
             $table->timestamp('leadsassigned_updated');
+
+            $table->index('leadsassigned_userid');
+            $table->index('leadsassigned_leadid');
+
         });
     }
 

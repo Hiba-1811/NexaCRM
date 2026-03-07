@@ -21,6 +21,8 @@ return new class extends Migration
             $table->string('contract_template_title_color', 30)->nullable()->default('#7493a9');
             $table->text('contract_template_body')->nullable();
             $table->string('contract_template_system', 20)->nullable()->default('no');
+
+            $table->index('contract_template_creatorid');
         });
     }
 

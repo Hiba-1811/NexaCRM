@@ -30,6 +30,13 @@ return new class extends Migration
             $table->string('emailqueue_status', 20)->nullable()->default('new');
             $table->integer('emailqueue_attempts')->nullable()->default(0);
             $table->text('emailqueue_notes')->nullable();
+
+            $table->index('emailqueue_type');
+            $table->index('emailqueue_resourcetype');
+            $table->index('emailqueue_resourceid');
+            $table->index('emailqueue_pdf_resource_type');
+            $table->index('emailqueue_pdf_resource_id');
+            $table->index('emailqueue_status');
         });
     }
 

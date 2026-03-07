@@ -19,6 +19,12 @@ return new class extends Migration
             $table->string('pinned_status', 50)->nullable()->default('pinned');
             $table->string('pinnedresource_type', 50)->nullable();
             $table->integer('pinnedresource_id')->nullable();
+
+            $table->index('pinned_status');
+            $table->index('pinned_userid');
+            $table->index('pinnedresource_id');
+            $table->index('pinnedresource_type');
+
         });
     }
 

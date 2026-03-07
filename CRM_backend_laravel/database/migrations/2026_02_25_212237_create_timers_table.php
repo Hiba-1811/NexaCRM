@@ -28,7 +28,18 @@ return new class extends Migration
             $table->integer('timer_billing_invoiceid')->nullable();
             $table->text('timer_mapping_type')->nullable();
             $table->integer('timer_mapping_id')->nullable();
+
+            $table->index('timer_creatorid');
+            $table->index('timer_taskid');
+            $table->index('timer_projectid');
+            $table->index('timer_clientid');
+            $table->index('timer_status');
+            $table->index('timer_billing_status');
+            $table->index('timer_billing_invoiceid');
+
         });
+
+
     }
 
     /**

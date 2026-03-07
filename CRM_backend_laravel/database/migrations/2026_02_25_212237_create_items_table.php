@@ -30,6 +30,8 @@ return new class extends Migration
             $table->integer('itemresource_id')->nullable();
             $table->text('item_mapping_type')->nullable();
             $table->integer('item_mapping_id')->nullable();
+
+            $table->index('item_categoryid');
         });
     }
 

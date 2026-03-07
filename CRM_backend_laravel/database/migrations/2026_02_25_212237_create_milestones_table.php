@@ -21,6 +21,10 @@ return new class extends Migration
             $table->integer('milestone_position')->default(1);
             $table->string('milestone_type', 50)->default('categorised');
             $table->string('milestone_color', 50)->default('default');
+
+            $table->index('milestone_projectid');
+            $table->index('milestone_creatorid');
+            $table->index('milestone_type');
         });
     }
 

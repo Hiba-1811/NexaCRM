@@ -17,3 +17,10 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('projects', ProjectController::class);
     Route::apiResource('tasks', TaskController::class);
 });
+Route::get('/test', function () {
+    return response()->json([
+        'status'  => 'ok',
+        'models'  => 'loaded',
+        'message' => 'NexaCRM API is running!'
+    ]);
+});

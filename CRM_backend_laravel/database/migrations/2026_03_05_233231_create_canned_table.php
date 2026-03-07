@@ -12,14 +12,25 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('canned', function (Blueprint $table) {
-            $table->integer('canned_id')->primary();
-            $table->timestamp('canned_created');
-            $table->timestamp('canned_updated');
+
+            $table->increments('canned_id');
+
+            $table->dateTime('canned_created');
+            $table->dateTime('canned_updated');
+
             $table->integer('canned_creatorid')->nullable();
             $table->integer('canned_categoryid')->nullable();
+
             $table->string('canned_title', 250)->nullable();
             $table->text('canned_message')->nullable();
-            $table->string('canned_visibility', 20)->nullable()->default('public');
+
+            $table->string('canned_visibility', 20)->default('public');
+
+            // indexes
+            $table->index('canned_categoryid');
+            $table->index('canned_creatorid');
+            $table->index('canned_visibility');
+
         });
     }
 

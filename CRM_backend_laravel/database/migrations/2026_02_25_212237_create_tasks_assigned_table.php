@@ -17,6 +17,9 @@ return new class extends Migration
             $table->integer('tasksassigned_userid')->nullable();
             $table->timestamp('tasksassigned_created')->nullable();
             $table->timestamp('tasksassigned_updated')->nullable();
+
+            $table->index('tasksassigned_taskid');
+            $table->index('tasksassigned_userid');
         });
     }
 

@@ -22,6 +22,10 @@ return new class extends Migration
             $table->string('ticketreply_source', 10)->default('web');
             $table->text('ticketreply_imap_sender_email_id');
             $table->string('ticketreply_type', 10)->default('reply');
+
+            $table->index('ticketreply_creatorid');
+            $table->index('ticketreply_ticketid');
+            $table->index('ticketreply_clientid');
         });
     }
 

@@ -22,6 +22,14 @@ return new class extends Migration
             $table->integer('tasksdependency_blockerid')->nullable();
             $table->string('tasksdependency_type', 100)->nullable();
             $table->string('tasksdependency_status', 100)->nullable()->default('active');
+
+            $table->index('tasksdependency_projectid');
+            $table->index('tasksdependency_clientid');
+            $table->index('tasksdependency_taskid');
+            $table->index('tasksdependency_blockerid');
+            $table->index('tasksdependency_type');
+            $table->index('tasksdependency_creatorid');
+            
         });
     }
 

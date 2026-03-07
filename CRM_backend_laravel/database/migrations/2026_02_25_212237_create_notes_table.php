@@ -23,6 +23,10 @@ return new class extends Migration
             $table->integer('noteresource_id')->nullable();
             $table->text('note_mapping_type')->nullable();
             $table->integer('note_mapping_id')->nullable();
+
+            $table->index('note_creatorid');
+            $table->index('noteresource_type');
+            $table->index('noteresource_id');
         });
     }
 

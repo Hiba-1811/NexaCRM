@@ -22,6 +22,8 @@ return new class extends Migration
             $table->text('proposal_template_body')->nullable();
             $table->integer('proposal_template_estimate_id')->nullable();
             $table->string('proposal_template_system', 20)->nullable()->default('no');
+
+            $table->index('proposal_template_creatorid');
         });
     }
 

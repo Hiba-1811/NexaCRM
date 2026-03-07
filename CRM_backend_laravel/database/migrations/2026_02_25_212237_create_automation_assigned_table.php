@@ -6,24 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('automation_assigned', function (Blueprint $table) {
-            $table->integer('automationassigned_id')->primary();
-            $table->timestamp('automationassigned_created')->nullable();
+            $table->increments('automationassigned_id');
+            $table->dateTime('automationassigned_created')->nullable();
             $table->integer('automationassigned_updated')->nullable();
             $table->integer('automationassigned_userid')->nullable();
             $table->string('automationassigned_resource_type', 150)->nullable();
             $table->integer('automationassigned_resource_id')->nullable();
+
+            $table->index('automationassigned_resource_id');
+            $table->index('automationassigned_resource_type');
+            $table->index('automationassigned_userid');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('automation_assigned');

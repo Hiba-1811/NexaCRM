@@ -27,6 +27,12 @@ return new class extends Migration
             $table->integer('reminderresource_id')->nullable();
             $table->text('reminder_mapping_type')->nullable();
             $table->integer('reminder_mapping_id')->nullable();
+
+            $table->index('reminderresource_type');
+            $table->index('reminderresource_id');
+            $table->index('reminder_status');
+            $table->index('reminder_sent');
+
         });
     }
 

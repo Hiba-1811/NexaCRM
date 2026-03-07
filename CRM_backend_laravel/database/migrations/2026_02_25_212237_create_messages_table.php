@@ -31,6 +31,15 @@ return new class extends Migration
             $table->string('message_status', 150)->nullable()->default('unread');
             $table->text('message_mapping_type')->nullable();
             $table->integer('message_mapping_id')->nullable();
+
+            $table->index('message_status');
+            $table->index('message_creatorid');
+            $table->index('message_creator_uniqueid');
+            $table->index('message_target_uniqueid');
+            $table->index('message_type');
+            $table->index('message_source');
+            $table->index('message_target');
+            
         });
     }
 

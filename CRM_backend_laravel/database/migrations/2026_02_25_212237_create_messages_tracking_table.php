@@ -19,6 +19,12 @@ return new class extends Migration
             $table->string('messagestracking_target', 120)->nullable();
             $table->string('messagestracking_user_unique_id', 120)->nullable();
             $table->string('messagestracking_type', 50)->nullable();
+
+            $table->string('messagetracking_target')->nullable();
+            $table->index('messagetracking_target');
+            $table->index('messagestracking_target');
+            $table->index('messagestracking_user_unique_id');
+
         });
     }
 

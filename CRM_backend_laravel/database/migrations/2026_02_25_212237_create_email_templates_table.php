@@ -28,6 +28,9 @@ return new class extends Migration
             $table->string('emailtemplate_real_template', 50)->nullable()->default('yes');
             $table->string('emailtemplate_show_enabled', 50)->nullable()->default('yes');
             $table->integer('emailtemplate_id')->primary();
+
+            $table->index('emailtemplate_type');
+            $table->index('emailtemplate_category');
         });
     }
 

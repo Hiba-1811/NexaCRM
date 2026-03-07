@@ -41,6 +41,16 @@ return new class extends Migration
             $table->string('subscription_visibility', 50)->nullable()->default('visible');
             $table->string('subscription_cron_status', 20)->nullable()->default('none');
             $table->timestamp('subscription_cron_date')->nullable();
+
+            $table->index('subscription_gateway_id');
+            $table->index('subscription_gateway_product');
+            $table->index('subscription_gateway_price');
+            $table->index('subscription_creatorid');
+            $table->index('subscription_clientid');
+            $table->index('subscription_projectid');
+            $table->index('subscription_categoryid');
+            $table->index('subscription_status');
+            $table->index('subscription_visibility');
         });
     }
 

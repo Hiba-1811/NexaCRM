@@ -17,6 +17,9 @@ return new class extends Migration
             $table->integer('projectsassigned_userid')->nullable();
             $table->timestamp('projectsassigned_created')->nullable();
             $table->timestamp('projectsassigned_updated')->nullable();
+            
+            $table->index('projectsassigned_projectid');
+            $table->index('projectsassigned_userid');
         });
     }
 

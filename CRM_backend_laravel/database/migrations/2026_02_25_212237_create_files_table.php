@@ -31,6 +31,11 @@ return new class extends Migration
             $table->integer('file_mapping_id')->nullable();
             $table->string('fileresource_type', 50)->nullable();
             $table->integer('fileresource_id')->nullable();
+
+            $table->index('file_creatorid');
+            $table->index('file_clientid');
+            $table->index('fileresource_type');
+            $table->index('fileresource_id');
         });
     }
 

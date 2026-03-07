@@ -30,6 +30,13 @@ return new class extends Migration
             $table->integer('paymentresource_id')->nullable();
             $table->text('payment_mapping_type')->nullable();
             $table->integer('payment_mapping_id')->nullable();
+
+            $table->index('payment_creatorid');
+            $table->index('payment_invoiceid');
+            $table->index('payment_clientid');
+            $table->index('payment_projectid');
+            $table->index('payment_gateway');
+            $table->index('payment_subscriptionid');
         });
     }
 

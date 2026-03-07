@@ -6,16 +6,13 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('attachments', function (Blueprint $table) {
-            $table->integer('attachment_id')->primary();
+            $table->increments('attachment_id');
             $table->string('attachment_uniqiueid', 100);
-            $table->timestamp('attachment_created')->nullable();
-            $table->timestamp('attachment_updated')->nullable();
+            $table->dateTime('attachment_created')->nullable();
+            $table->dateTime('attachment_updated')->nullable();
             $table->integer('attachment_creatorid');
             $table->integer('attachment_clientid')->nullable();
             $table->string('attachment_directory', 100);
@@ -26,12 +23,14 @@ return new class extends Migration
             $table->string('attachment_thumbname', 250)->nullable();
             $table->string('attachmentresource_type', 50);
             $table->integer('attachmentresource_id');
+
+            $table->index('attachment_clientid');
+            $table->index('attachment_creatorid');
+            $table->index('attachmentresource_id');
+            $table->index('attachmentresource_type');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('attachments');

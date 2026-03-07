@@ -24,6 +24,9 @@ return new class extends Migration
             $table->string('session_invoices', 250)->nullable();
             $table->integer('session_subscription')->nullable();
             $table->text('session_payload')->nullable();
+
+            $table->index('session_gateway_name');
+            $table->index('session_gateway_ref');
         });
     }
 

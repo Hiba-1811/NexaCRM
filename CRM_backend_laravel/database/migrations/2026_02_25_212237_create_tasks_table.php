@@ -137,6 +137,31 @@ return new class extends Migration
             $table->integer('taskresource_id')->nullable();
             $table->text('task_mapping_type')->nullable();
             $table->integer('task_mapping_id')->nullable();
+
+            $table->index('task_creatorid');
+            $table->index('task_clientid');
+            $table->index('task_billable');
+            $table->index('task_milestoneid');
+            $table->index('task_projectid'); // taskresource_id key
+            $table->index('task_visibility');
+            $table->index('task_client_visibility');
+            $table->index('task_importid');
+            $table->index('task_active_state');
+            $table->index('task_billable_status');
+            $table->index('task_billable_invoiceid');
+            $table->index('task_billable_lineitemid');
+            $table->index('task_recurring');
+            $table->index('task_recurring_parent_id');
+            $table->index('task_recurring_finished');
+            $table->index('task_calendar_reminder');
+            $table->index('task_cover_image');
+            $table->index('task_date_due');
+            $table->index('task_date_start');
+            $table->index('task_position');
+            $table->index('task_previous_status');
+            $table->index('task_priority');
+            $table->index('task_status');
+
         });
     }
 

@@ -41,6 +41,14 @@ return new class extends Migration
             $table->integer('expenseresource_id')->nullable();
             $table->text('expense_mapping_type')->nullable();
             $table->integer('expense_mapping_id')->nullable();
+
+            $table->index('expense_clientid');
+            $table->index('expense_projectid');
+            $table->index('expense_creatorid');
+            $table->index('expense_billable');
+            $table->index('expense_billing_status');
+            $table->index('expense_billable_invoiceid');
+            
         });
     }
 

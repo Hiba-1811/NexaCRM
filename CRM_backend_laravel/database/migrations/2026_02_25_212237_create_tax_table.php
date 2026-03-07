@@ -22,6 +22,9 @@ return new class extends Migration
             $table->integer('tax_lineitem_id')->nullable();
             $table->string('taxresource_type', 50)->nullable();
             $table->integer('taxresource_id')->nullable();
+
+            $table->index('taxresource_type');
+            $table->index('taxresource_id');
         });
     }
 

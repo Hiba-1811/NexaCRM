@@ -59,6 +59,8 @@ return new class extends Migration
             $table->string('role_canned', 20)->default('no');
             $table->string('role_canned_scope', 20)->default('own');
             $table->text('modules')->nullable();
+
+            $table->index('role_type');
         });
     }
 

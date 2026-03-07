@@ -23,6 +23,8 @@ return new class extends Migration
             $table->string('knowledgebase_embed_video_id', 50)->nullable();
             $table->text('knowledgebase_embed_code')->nullable();
             $table->string('knowledgebase_embed_thumb', 150)->nullable();
+
+            $table->index('knowledgebase_categoryid');
         });
     }
 

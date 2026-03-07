@@ -20,6 +20,10 @@ return new class extends Migration
             $table->integer('taskstatus_position');
             $table->string('taskstatus_color', 100)->default('default');
             $table->string('taskstatus_system_default', 10)->default('no');
+
+            $table->index('taskstatus_creatorid');
+            $table->index('taskstatus_position');
+            $table->index('taskstatus_system_default');
         });
     }
 

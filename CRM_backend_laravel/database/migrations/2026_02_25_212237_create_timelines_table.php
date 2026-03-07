@@ -18,6 +18,10 @@ return new class extends Migration
             $table->integer('timeline_resourceid')->nullable();
             $table->text('timeline_mapping_type')->nullable();
             $table->integer('timeline_mapping_id')->nullable();
+
+            $table->index('timeline_eventid');
+            $table->index('timeline_resourcetype');
+            $table->index('timeline_resourceid');
         });
     }
 

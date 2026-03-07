@@ -18,6 +18,11 @@ return new class extends Migration
             $table->integer('product_task_dependency_taskid')->nullable();
             $table->integer('product_task_dependency_blockerid')->nullable();
             $table->string('product_task_dependency_type', 100)->nullable();
+
+            $table->index('product_task_dependency_taskid');
+            $table->index('product_task_dependency_blockerid');
+            $table->index('product_task_dependency_type');
+        
         });
     }
 

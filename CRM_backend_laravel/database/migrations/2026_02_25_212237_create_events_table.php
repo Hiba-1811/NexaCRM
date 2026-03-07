@@ -34,6 +34,15 @@ return new class extends Migration
             $table->string('event_notification_category', 150)->nullable();
             $table->string('eventresource_type', 50)->nullable();
             $table->integer('eventresource_id')->nullable();
+
+            $table->index('eventresource_type');
+            $table->index('eventresource_id');
+            $table->index('event_creatorid');
+            $table->index('event_item');
+            $table->index('event_parent_type');
+            $table->index('event_parent_id');
+            $table->index('event_item_id');
+
         });
     }
 

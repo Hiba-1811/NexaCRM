@@ -103,6 +103,13 @@ return new class extends Migration
             $table->text('ticket_custom_field_70')->nullable();
             $table->text('ticket_mapping_type')->nullable();
             $table->integer('ticket_mapping_id')->nullable();
+
+            $table->index('ticket_creatorid');
+            $table->index('ticket_categoryid');
+            $table->index('ticket_clientid');
+            $table->index('ticket_projectid');
+            $table->index('ticket_priority');
+            $table->index('ticket_status');
         });
     }
 

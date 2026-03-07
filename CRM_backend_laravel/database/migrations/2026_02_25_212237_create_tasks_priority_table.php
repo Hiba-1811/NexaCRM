@@ -20,6 +20,10 @@ return new class extends Migration
             $table->integer('taskpriority_position');
             $table->string('taskpriority_color', 100)->default('default');
             $table->string('taskpriority_system_default', 10)->default('no');
+
+            $table->index('taskpriority_creatorid');
+            $table->index('taskpriority_position');
+            $table->index('taskpriority_system_default');
         });
     }
 

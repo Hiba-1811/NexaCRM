@@ -17,6 +17,9 @@ return new class extends Migration
             $table->timestamp('projectsmanager_updated');
             $table->integer('projectsmanager_projectid')->nullable();
             $table->integer('projectsmanager_userid');
+
+            $table->index('projectsmanager_userid');
+            $table->index('projectsmanager_projectid');
         });
     }
 

@@ -33,6 +33,12 @@ return new class extends Migration
             $table->float('lineitem_dimensions_width')->nullable();
             $table->string('lineitem_tax_status', 100)->nullable()->default('taxable');
             $table->integer('lineitem_linked_product_id')->nullable();
+
+            $table->index('lineitemresource_linked_type');
+            $table->index('lineitemresource_linked_id');
+            $table->index('lineitemresource_type');
+            $table->index('lineitemresource_id');
+            $table->index('lineitem_type');
         });
     }
 

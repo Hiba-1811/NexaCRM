@@ -20,7 +20,14 @@ return new class extends Migration
             $table->string('tag_visibility', 50)->default('user');
             $table->string('tagresource_type', 50);
             $table->integer('tagresource_id');
+
+            $table->index('tag_creatorid');
+            $table->index('tagresource_type');
+            $table->index('tag_visibility');
+            $table->index('tagresource_id');
         });
+
+        
     }
 
     /**
