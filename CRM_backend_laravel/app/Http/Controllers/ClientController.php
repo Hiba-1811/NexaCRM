@@ -16,6 +16,9 @@ class ClientController extends Controller
     {
         $data = $request->all();
         $data['client_creatorid'] = auth('api')->user()->id;
+        $data['client_created_from_leadid'] = 0;
+        $data['client_created'] = now();
+        $data['client_updated'] = now();
         $client = Client::create($data);
         return response()->json($client, 201);
     }

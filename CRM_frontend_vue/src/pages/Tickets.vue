@@ -1,0 +1,431 @@
+<template>
+  <div class="dashboard">
+<div class="topbar-right">
+  <NotificationBell />
+</div>
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="logo-icon">N</div>
+        <span>NexaCRM</span>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-label">MAIN MENU</div>
+        <ul>
+          <li @click="router.push('/dashboard')"><span class="icon">⊞</span> Dashboard</li>
+          <li @click="router.push('/clients')"><span class="icon">👥</span> Clients</li>
+          <li @click="router.push('/projects')"><span class="icon">📁</span> Projects</li>
+          <li @click="router.push('/tasks')"><span class="icon">✓</span> Tasks</li>
+          <li @click="router.push('/invoices')"><span class="icon">🧾</span> Invoices</li>
+          <li class="active"><span class="icon">🎫</span> Tickets</li>
+        </ul>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="avatar">{{ initials }}</div>
+          <div class="user-details">
+            <span class="user-email">{{ auth.user?.email }}</span>
+            <span class="user-role">Administrator</span>
+          </div>
+        </div>
+        <div class="logout-btn" @click="handleLogout">⏻ Logout</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1>Tickets</h1>
+          <p>Manage and track support tickets</p>
+        </div>
+        <button class="btn-add" @click="openModal()">+ New Ticket</button>
+      </header>
+
+      <section class="content">
+
+        <!-- Stats -->
+        <div class="stats-row">
+          <div class="stat-mini blue">
+            <span class="stat-num">{{ tickets.length }}</span>
+            <span class="stat-lbl">Total</span>
+          </div>
+          <div class="stat-mini green">
+            <span class="stat-num">{{ tickets.filter(t => t.ticket_status === 1).length }}</span>
+            <span class="stat-lbl">Open</span>
+          </div>
+          <div class="stat-mini yellow">
+            <span class="stat-num">{{ tickets.filter(t => t.ticket_status === 2).length }}</span>
+            <span class="stat-lbl">In Progress</span>
+          </div>
+          <div class="stat-mini gray">
+            <span class="stat-num">{{ tickets.filter(t => t.ticket_status === 3).length }}</span>
+            <span class="stat-lbl">Closed</span>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-bar">
+          <input v-model="search" placeholder="🔍 Search tickets..." class="search-input" />
+          <div class="filter-tabs">
+            <button :class="['tab', statusFilter === '' ? 'active' : '']" @click="statusFilter = ''">All</button>
+            <button :class="['tab', statusFilter === '1' ? 'active' : '']" @click="statusFilter = '1'">🟢 Open</button>
+            <button :class="['tab', statusFilter === '2' ? 'active' : '']" @click="statusFilter = '2'">🟡 In Progress</button>
+            <button :class="['tab', statusFilter === '3' ? 'active' : '']" @click="statusFilter = '3'">✅ Closed</button>
+          </div>
+          <select v-model="priorityFilter" class="sort-select">
+            <option value="">All Priorities</option>
+            <option value="high">🔴 High</option>
+            <option value="medium">🟡 Medium</option>
+            <option value="low">🟢 Low</option>
+          </select>
+        </div>
+
+        <!-- Table -->
+        <div class="table-card">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Subject</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Source</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="loading">
+                <td colspan="7" class="loading">Loading...</td>
+              </tr>
+              <tr v-else-if="filteredTickets.length === 0">
+                <td colspan="7" class="loading">No tickets found</td>
+              </tr>
+              <tr v-for="ticket in filteredTickets" :key="ticket.ticket_id">
+                <td><b>#{{ ticket.ticket_id }}</b></td>
+                <td>
+                  <div class="subject-cell">
+                    <span class="subject-icon">🎫</span>
+                    <div>
+                      <b>{{ ticket.ticket_subject }}</b>
+                      <div class="ticket-msg">{{ ticket.ticket_message?.substring(0, 50) }}...</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span :class="['badge', getPriorityClass(ticket.ticket_priority)]">
+                    {{ getPriorityLabel(ticket.ticket_priority) }}
+                  </span>
+                </td>
+                <td>
+                  <span :class="['badge', getStatusClass(ticket.ticket_status)]">
+                    {{ getStatusLabel(ticket.ticket_status) }}
+                  </span>
+                </td>
+                <td>{{ ticket.ticket_source || '—' }}</td>
+                <td>{{ formatDate(ticket.ticket_created) }}</td>
+                <td>
+                  <div class="actions">
+                    <button class="btn-edit" @click="openModal(ticket)">✏ Edit</button>
+                    <button class="btn-delete" @click="deleteTicket(ticket.ticket_id)">🗑</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination">
+          <span class="page-info">Showing {{ filteredTickets.length }} of {{ tickets.length }} tickets</span>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- Modal -->
+    <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>{{ editingTicket ? 'Edit Ticket' : 'New Ticket' }}</h3>
+          <span @click="showModal = false" class="modal-close">✕</span>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="input-group full">
+              <label>Subject *</label>
+              <input v-model="form.ticket_subject" placeholder="Ticket subject..." />
+            </div>
+            <div class="input-group">
+              <label>Priority</label>
+              <select v-model="form.ticket_priority">
+                <option value="high">🔴 High</option>
+                <option value="medium">🟡 Medium</option>
+                <option value="low">🟢 Low</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Status</label>
+              <select v-model="form.ticket_status">
+                <option value="1">🟢 Open</option>
+                <option value="2">🟡 In Progress</option>
+                <option value="3">✅ Closed</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Source</label>
+              <select v-model="form.ticket_source">
+                <option value="email">📧 Email</option>
+                <option value="phone">📞 Phone</option>
+                <option value="web">🌐 Web</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>User Type</label>
+              <select v-model="form.ticket_user_type">
+                <option value="team">Team</option>
+                <option value="client">Client</option>
+              </select>
+            </div>
+            <div class="input-group full">
+              <label>Message</label>
+              <textarea v-model="form.ticket_message" placeholder="Describe the issue..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" @click="showModal = false">Cancel</button>
+          <button class="btn-save" @click="saveTicket">
+            {{ editingTicket ? 'Update' : 'Create' }} Ticket
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from "vue"
+import { useAuthStore } from "../stores/authStore"
+import { useRouter } from "vue-router"
+import api from "../services/api"
+
+const auth = useAuthStore()
+const router = useRouter()
+const tickets = ref([])
+const loading = ref(true)
+const search = ref("")
+const statusFilter = ref("")
+const priorityFilter = ref("")
+const showModal = ref(false)
+const editingTicket = ref(null)
+
+const form = ref({
+  ticket_subject: "",
+  ticket_message: "",
+  ticket_priority: "medium",
+  ticket_status: 1,
+  ticket_source: "web",
+  ticket_user_type: "team",
+})
+
+const initials = computed(() => (auth.user?.email || "A")[0].toUpperCase())
+
+const filteredTickets = computed(() => {
+  let list = tickets.value
+  if (search.value) {
+    const s = search.value.toLowerCase()
+    list = list.filter(t => (t.ticket_subject || "").toLowerCase().includes(s))
+  }
+  if (statusFilter.value) {
+    list = list.filter(t => t.ticket_status == statusFilter.value)
+  }
+  if (priorityFilter.value) {
+    list = list.filter(t => t.ticket_priority === priorityFilter.value)
+  }
+  return list
+})
+
+function getPriorityClass(priority) {
+  if (priority === 'high') return 'badge-red'
+  if (priority === 'medium') return 'badge-yellow'
+  return 'badge-green'
+}
+
+function getPriorityLabel(priority) {
+  if (priority === 'high') return '🔴 High'
+  if (priority === 'medium') return '🟡 Medium'
+  return '🟢 Low'
+}
+
+function getStatusClass(status) {
+  if (status === 1) return 'badge-green'
+  if (status === 2) return 'badge-yellow'
+  return 'badge-gray'
+}
+
+function getStatusLabel(status) {
+  if (status === 1) return '🟢 Open'
+  if (status === 2) return '🟡 In Progress'
+  return '✅ Closed'
+}
+
+function formatDate(date) {
+  if (!date) return '—'
+  return new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+onMounted(async () => {
+  if (auth.token && !auth.user) await auth.fetchMe()
+  await loadTickets()
+})
+
+async function loadTickets() {
+  loading.value = true
+  try {
+    const res = await api.get("/tickets")
+    tickets.value = res.data
+  } catch (e) {
+    console.error(e)
+  } finally {
+    loading.value = false
+  }
+}
+
+function openModal(ticket = null) {
+  editingTicket.value = ticket
+  if (ticket) {
+    form.value = {
+      ticket_subject: ticket.ticket_subject || "",
+      ticket_message: ticket.ticket_message || "",
+      ticket_priority: ticket.ticket_priority || "medium",
+      ticket_status: ticket.ticket_status || 1,
+      ticket_source: ticket.ticket_source || "web",
+      ticket_user_type: ticket.ticket_user_type || "team",
+    }
+  } else {
+    form.value = {
+      ticket_subject: "",
+      ticket_message: "",
+      ticket_priority: "medium",
+      ticket_status: 1,
+      ticket_source: "web",
+      ticket_user_type: "team",
+    }
+  }
+  showModal.value = true
+}
+
+async function saveTicket() {
+  try {
+    if (editingTicket.value) {
+      await api.put(`/tickets/${editingTicket.value.ticket_id}`, form.value)
+    } else {
+      await api.post("/tickets", form.value)
+    }
+    showModal.value = false
+    await loadTickets()
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+async function deleteTicket(id) {
+  if (!confirm("Are you sure?")) return
+  try {
+    await api.delete(`/tickets/${id}`)
+    await loadTickets()
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+async function handleLogout() {
+  await auth.logout()
+  router.push("/")
+}
+</script>
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.dashboard { display: flex; height: 100vh; font-family: 'Inter', 'Segoe UI', sans-serif; background: #f1f5f9; }
+.sidebar { width: 250px; background: #0f172a; color: white; display: flex; flex-direction: column; padding: 24px 16px; flex-shrink: 0; }
+.sidebar-brand { display: flex; align-items: center; gap: 12px; padding: 0 8px; margin-bottom: 36px; }
+.logo-icon { width: 36px; height: 36px; background: #2563eb; color: white; font-size: 18px; font-weight: 900; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.sidebar-brand span { font-size: 18px; font-weight: 700; }
+.nav-label { font-size: 10px; color: #475569; font-weight: 700; letter-spacing: 1px; padding: 0 8px; margin-bottom: 8px; }
+.sidebar-nav ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.sidebar-nav li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; color: #94a3b8; transition: all 0.2s; }
+.sidebar-nav li:hover { background: #1e293b; color: white; }
+.sidebar-nav li.active { background: #2563eb; color: white; }
+.icon { font-size: 16px; }
+.sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 12px; }
+.user-info { display: flex; align-items: center; gap: 10px; padding: 10px; background: #1e293b; border-radius: 10px; }
+.avatar { width: 34px; height: 34px; background: #2563eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+.user-details { display: flex; flex-direction: column; }
+.user-email { font-size: 12px; color: #e2e8f0; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-role { font-size: 11px; color: #64748b; }
+.logout-btn { padding: 10px; text-align: center; background: #1e293b; color: #94a3b8; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+.logout-btn:hover { background: #ef4444; color: white; }
+.main { flex: 1; overflow-y: auto; }
+.topbar { background: white; padding: 20px 30px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+.topbar h1 { font-size: 22px; font-weight: 700; color: #0f172a; }
+.topbar p { font-size: 13px; color: #94a3b8; margin-top: 2px; }
+.btn-add { padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.btn-add:hover { background: #1d4ed8; }
+.content { padding: 24px 30px; display: flex; flex-direction: column; gap: 16px; }
+.stats-row { display: flex; gap: 16px; }
+.stat-mini { background: white; border-radius: 12px; padding: 16px 24px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); min-width: 120px; }
+.stat-mini.blue { border-left: 4px solid #2563eb; }
+.stat-mini.green { border-left: 4px solid #22c55e; }
+.stat-mini.yellow { border-left: 4px solid #f59e0b; }
+.stat-mini.gray { border-left: 4px solid #64748b; }
+.stat-num { font-size: 24px; font-weight: 700; color: #0f172a; }
+.stat-lbl { font-size: 12px; color: #94a3b8; }
+.filters-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.search-input { flex: 1; min-width: 200px; padding: 10px 16px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; }
+.search-input:focus { border-color: #2563eb; }
+.filter-tabs { display: flex; gap: 6px; }
+.tab { padding: 8px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; background: white; font-size: 13px; cursor: pointer; color: #64748b; transition: all 0.2s; }
+.tab:hover { border-color: #2563eb; color: #2563eb; }
+.tab.active { background: #2563eb; color: white; border-color: #2563eb; }
+.sort-select { padding: 9px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; outline: none; background: white; }
+.table-card { background: white; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); overflow: hidden; }
+table { width: 100%; border-collapse: collapse; }
+thead { background: #f8fafc; }
+th { padding: 14px 20px; text-align: left; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 14px 20px; font-size: 14px; color: #374151; border-top: 1px solid #f1f5f9; }
+.loading { text-align: center; color: #94a3b8; padding: 40px; }
+.subject-cell { display: flex; align-items: flex-start; gap: 10px; }
+.subject-icon { font-size: 18px; flex-shrink: 0; }
+.ticket-msg { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+.badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.badge-green { background: #dcfce7; color: #16a34a; }
+.badge-yellow { background: #fef9c3; color: #ca8a04; }
+.badge-red { background: #fff1f2; color: #ef4444; }
+.badge-gray { background: #f1f5f9; color: #64748b; }
+.actions { display: flex; gap: 8px; }
+.btn-edit { padding: 6px 12px; background: #eff6ff; color: #2563eb; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; }
+.btn-edit:hover { background: #dbeafe; }
+.btn-delete { padding: 6px 10px; background: #fff1f2; color: #ef4444; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; }
+.btn-delete:hover { background: #fecdd3; }
+.pagination { display: flex; justify-content: flex-end; }
+.page-info { font-size: 13px; color: #94a3b8; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.modal { background: white; border-radius: 16px; width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+.modal-header { padding: 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { font-size: 18px; font-weight: 700; color: #0f172a; }
+.modal-close { cursor: pointer; color: #94a3b8; font-size: 18px; }
+.modal-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.input-group { display: flex; flex-direction: column; gap: 6px; }
+.input-group.full { grid-column: 1 / -1; }
+.input-group label { font-size: 13px; font-weight: 600; color: #374151; }
+.input-group input, .input-group select, .input-group textarea { padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; transition: border 0.2s; font-family: inherit; }
+.input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: #2563eb; }
+.input-group textarea { resize: vertical; min-height: 100px; }
+.modal-footer { padding: 20px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px; }
+.btn-cancel { padding: 10px 20px; background: #f1f5f9; color: #64748b; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
+.btn-save { padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.btn-save:hover { background: #1d4ed8; }
+</style>
