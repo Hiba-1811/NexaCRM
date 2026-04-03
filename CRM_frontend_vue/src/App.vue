@@ -1,7 +1,29 @@
-<script setup lang="ts"></script>
-
 <template>
-  <router-view />
+  <div id="app">
+    <router-view />
+  </div>
 </template>
 
-<style scoped></style>
+<script setup lang="ts">
+import { onMounted } from 'vue'
+import { useAuthStore } from './stores/authStore'
+
+const authStore = useAuthStore()
+
+onMounted(() => {
+  authStore.checkAuth()
+})
+</script>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: #f5f7fa;
+}
+</style>

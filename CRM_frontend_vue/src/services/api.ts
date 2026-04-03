@@ -1,34 +1,30 @@
-import axios from "axios"
-import { useAuthStore } from "../stores/authStore"
+import axios from './axios'
 
-const api = axios.create({
-baseURL: "http://192.168.1.100:8000/api",
-  headers: {
-    "Content-Type": "application/json",
+export const api = {
+  async login(email: string, password: string) {
+    const response = await axios.post('/auth/login', { email, password })
+    const { access_token, token_type, user } = response.data
+    
+    localStorage.setItem('token', access_token)
+    localStorage.setItem('token_type', token_type)
+    localStorage.setItem('user', JSON.stringify(user))
+    
+    return user
   },
-})
-
-api.interceptors.request.use((config) => {
-  const auth = useAuthStore()
-  if (auth.token) {
-    config.headers.Authorization = `Bearer ${auth.token}`
+  
+  logout() {
+    localStorage.removeItem('token')
+    localStorage.removeItem('token_type')
+    localStorage.removeItem('user')
+  },
+  
+  async getDashboardStats() {
+    const response = await axios.get('/dashboard/stats')
+    return response.data
+  },
+  
+  getUser() {
+    const user = localStorage.getItem('user')
+    return user ? JSON.parse(user) : null
   }
-  return config
-})
-
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      const auth = useAuthStore()
-      if (auth.token) {
-        auth.token = null
-        localStorage.removeItem("token")
-        window.location.href = "/"
-      }
-    }
-    return Promise.reject(error)
-  }
-)
-
-export default api
+}

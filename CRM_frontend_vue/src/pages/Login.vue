@@ -1,354 +1,120 @@
 <template>
-  <div class="login-page">
-  <div class="topbar-right">
-  <NotificationBell />
-</div>
-
-    <!-- Background decorations -->
-    <div class="bg-circle circle-1"></div>
-    <div class="bg-circle circle-2"></div>
-    <div class="bg-circle circle-3"></div>
-
-    <!-- Card -->
+  <div class="login-container">
     <div class="login-card">
-
-      <!-- Logo -->
-      <div class="brand">
-        <div class="logo">N</div>
-        <span class="brand-name">NexaCRM</span>
+      <div class="login-header">
+        <h1>NEXACRM</h1>
+        <p>Connectez-vous à votre compte</p>
       </div>
-
-      <div class="card-header">
-        <h2>Welcome back 👋</h2>
-        <p>Sign in to your account to continue</p>
-      </div>
-
-      <div class="input-group">
-        <label>Email Address</label>
-        <div class="input-wrap">
-          <span class="input-icon">✉️</span>
-          <input
-            v-model="email"
-            type="email"
-            placeholder="you@company.com"
-            :class="{ 'input-error': errorField === 'email' }"
-            @keyup.enter="handleLogin"
-          />
+      <form @submit.prevent="handleLogin" class="login-form">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" v-model="email" placeholder="exemple@crm.com" required />
         </div>
-      </div>
-
-      <div class="input-group">
-        <label>Password</label>
-        <div class="input-wrap">
-          <span class="input-icon">🔒</span>
-          <input
-            v-model="password"
-            :type="showPassword ? 'text' : 'password'"
-            placeholder="••••••••"
-            :class="{ 'input-error': errorField === 'password' }"
-            @keyup.enter="handleLogin"
-          />
-          <span class="toggle-pass" @click="showPassword = !showPassword">
-            {{ showPassword ? '🙈' : '👁️' }}
-          </span>
+        <div class="form-group">
+          <label>Mot de passe</label>
+          <input type="password" v-model="password" placeholder="••••••" required />
         </div>
-      </div>
-
-      <div class="remember-row">
-        <label class="checkbox-label">
-          <input type="checkbox" v-model="remember" />
-          <span>Remember me</span>
-        </label>
-        <a href="#" class="forgot">Forgot password?</a>
-      </div>
-
-      <button class="btn-login" @click="handleLogin" :disabled="auth.loading">
-        <span v-if="!auth.loading">Sign In →</span>
-        <span v-else>Signing in...</span>
-      </button>
-
-      <div v-if="error" class="error-msg">
-        ⚠️ {{ error }}
-      </div>
-
-      <div class="card-footer">
-        <span>Powered by</span>
-        <b>NexaCRM v1.0</b>
-      </div>
-
+        <button type="submit" :disabled="authStore.isLoading" class="login-btn">
+          {{ authStore.isLoading ? 'Connexion...' : 'Se connecter' }}
+        </button>
+        <div v-if="error" class="error-message">{{ error }}</div>
+      </form>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref } from "vue"
-import { useRouter } from "vue-router"
-import { useAuthStore } from "../stores/authStore"
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/authStore'
 
+const email = ref('')
+const password = ref('')
+const error = ref('')
 const router = useRouter()
-const auth = useAuthStore()
+const authStore = useAuthStore()
 
-const email = ref("")
-const password = ref("")
-const error = ref("")
-const errorField = ref("")
-const showPassword = ref(false)
-const remember = ref(false)
-
-async function handleLogin() {
-  error.value = ""
-  errorField.value = ""
-
-  if (!email.value) {
-    error.value = "Please enter your email"
-    errorField.value = "email"
-    return
-  }
-  if (!password.value) {
-    error.value = "Please enter your password"
-    errorField.value = "password"
-    return
-  }
-
-  await auth.login(email.value, password.value)
-
-  if (auth.error) {
-    error.value = auth.error
+const handleLogin = async () => {
+  error.value = ''
+  const result = await authStore.login(email.value, password.value)
+  if (result.success && result.user) {
+    router.push(`/${result.user.position}/dashboard`)
   } else {
-    router.push("/dashboard")
+    error.value = result.error || 'Erreur de connexion'
   }
 }
 </script>
 
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-.login-page {
+<style scoped>
+.login-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #2563eb 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Inter', 'Segoe UI', sans-serif;
-  position: relative;
-  overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
 }
-
-/* Background circles */
-.bg-circle {
-  position: absolute;
-  border-radius: 50%;
-  opacity: 0.12;
-}
-
-.circle-1 {
-  width: 500px;
-  height: 500px;
-  background: #2563eb;
-  top: -150px;
-  right: -150px;
-}
-
-.circle-2 {
-  width: 350px;
-  height: 350px;
-  background: #60a5fa;
-  bottom: -100px;
-  left: -100px;
-}
-
-.circle-3 {
-  width: 200px;
-  height: 200px;
-  background: #93c5fd;
-  top: 50%;
-  left: 30%;
-}
-
-/* Card */
 .login-card {
-  position: relative;
-  z-index: 1;
   background: white;
-  padding: 48px;
-  border-radius: 28px;
+  border-radius: 20px;
+  padding: 40px;
   width: 100%;
-  max-width: 440px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
+  max-width: 450px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  justify-content: center;
-}
-
-.logo {
-  width: 44px;
-  height: 44px;
-  background: #2563eb;
-  color: white;
-  font-size: 20px;
-  font-weight: 900;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.brand-name {
-  font-size: 22px;
-  font-weight: 800;
-  color: #0f172a;
-  letter-spacing: -0.3px;
-}
-
-.card-header {
+.login-header {
   text-align: center;
+  margin-bottom: 30px;
 }
-
-.card-header h2 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #0f172a;
+.login-header h1 {
+  font-size: 32px;
+  color: #667eea;
+  margin-bottom: 10px;
 }
-
-.card-header p {
-  font-size: 14px;
-  color: #94a3b8;
-  margin-top: 6px;
-}
-
-.input-group {
+.login-header p { color: #666; }
+.login-form {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 20px;
 }
-
-.input-group label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #374151;
-}
-
-.input-wrap {
-  position: relative;
+.form-group {
   display: flex;
-  align-items: center;
-}
-
-.input-icon {
-  position: absolute;
-  left: 280px;
-  font-size: 15px;
-  pointer-events: none;
-}
-
-.input-wrap input {
-  width: 100%;
-  padding: 13px 16px;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 14px;
-  color: #0f172a;
-  outline: none;
-  transition: all 0.2s;
-  background: #f8fafc;
-  font-family: inherit;
-}
-
-.input-wrap input:focus {
-  border-color: #2563eb;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
-}
-
-.input-wrap input.input-error {
-  border-color: #ef4444;
-  background: #fff1f2;
-}
-
-.toggle-pass {
-  position: absolute;
-  right: 14px;
-  cursor: pointer;
-  font-size: 16px;
-  user-select: none;
-}
-
-.remember-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 8px;
-  font-size: 13px;
-  color: #64748b;
-  cursor: pointer;
 }
-
-.forgot {
-  font-size: 13px;
-  color: #2563eb;
-  text-decoration: none;
-  font-weight: 500;
+.form-group label {
+  font-weight: 600;
+  color: #333;
 }
-.forgot:hover { text-decoration: underline; }
-
-.btn-login {
-  width: 100%;
-  padding: 14px;
-  background: #2563eb;
+.form-group input {
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s;
+}
+.form-group input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+.login-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
+  padding: 12px;
   border: none;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 700;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
-  font-family: inherit;
+  transition: transform 0.2s;
 }
-
-.btn-login:hover:not(:disabled) {
-  background: #1d4ed8;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
-}
-
-.btn-login:disabled {
-  background: #93c5fd;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.error-msg {
-  background: #fff1f2;
-  border: 1px solid #fecdd3;
-  color: #ef4444;
-  padding: 12px 16px;
-  border-radius: 10px;
-  font-size: 13px;
+.login-btn:hover:not(:disabled) { transform: translateY(-2px); }
+.login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.error-message {
+  background: #fee;
+  color: #c33;
+  padding: 10px;
+  border-radius: 8px;
   text-align: center;
 }
-
-.card-footer {
-  text-align: center;
-  font-size: 12px;
-  color: #cbd5e1;
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  padding-top: 4px;
-  border-top: 1px solid #f1f5f9;
-}
-
-.card-footer b { color: #94a3b8; }
 </style>

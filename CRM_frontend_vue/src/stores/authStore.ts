@@ -1,59 +1,68 @@
-import { defineStore } from "pinia"
-import { ref, computed } from "vue"
-import api from "../services/api"
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import axios from 'axios'
 
-export const useAuthStore = defineStore("auth", () => {
+axios.defaults.baseURL = import.meta.env.VITE_API_URL
 
-  const token = ref<string | null>(localStorage.getItem("token"))
-  const user = ref<any | null>(null)
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+interface User {
+  id: number
+  name: string
+  email: string
+  first_name: string
+  last_name: string
+  position: 'admin' | 'staff' | 'client'
+}
 
-  const isAuthenticated = computed(() => !!token.value)
+export const useAuthStore = defineStore('auth', () => {
+  const user = ref<User | null>(JSON.parse(localStorage.getItem('user') || 'null'))
+  const token = ref<string | null>(localStorage.getItem('token'))
+  const isLoading = ref(false)
+  const isAuthenticated = computed(() => !!token.value && !!user.value)
 
-  async function login(email: string, password: string) {
-    loading.value = true
-    error.value = null
+  const setAuth = (newToken: string, newUser: User) => {
+    token.value = newToken
+    user.value = newUser
+    localStorage.setItem('token', newToken)
+    localStorage.setItem('user', JSON.stringify(newUser))
+    axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`
+  }
+
+  const clearAuth = () => {
+    token.value = null
+    user.value = null
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    delete axios.defaults.headers.common['Authorization']
+  }
+
+  const login = async (email: string, password: string) => {
+    isLoading.value = true
     try {
-      const response = await api.post("/auth/login", { email, password })
-     token.value = response.data.access_token
-      user.value = response.data.user
-      localStorage.setItem("token", response.data.token)
-    } catch (err: any) {
-      error.value = err.response?.data?.message || "Erreur de connexion"
+      const response = await axios.post('/auth/login', { email, password })
+      const { access_token, user: userData } = response.data
+      const mappedUser = { ...userData, role: userData.position }
+      setAuth(access_token, mappedUser)
+      return { success: true, user: mappedUser }
+    } catch (error: any) {
+      return { success: false, error: error.response?.data?.message || 'Email ou mot de passe incorrect' }
     } finally {
-      loading.value = false
+      isLoading.value = false
     }
   }
 
-  async function logout() {
+  const logout = async () => {
     try {
-      await api.post("/auth/logout")
+      // await axios.post("/auth/logout")
     } finally {
-      token.value = null
-      user.value = null
-      localStorage.removeItem("token")
+      clearAuth()
     }
   }
 
-  async function fetchMe() {
-    try {
-      const response = await api.get("/auth/me")
-      user.value = response.data
-    } catch {
-      logout()
+  const checkAuth = () => {
+    if (token.value) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
     }
   }
 
-  return {
-    token,
-    user,
-    loading,
-    error,
-    isAuthenticated,
-    login,
-    logout,
-    fetchMe
-  }
-
+  return { user, token, isLoading, isAuthenticated, login, logout, checkAuth }
 })
